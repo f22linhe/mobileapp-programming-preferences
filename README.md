@@ -1,42 +1,130 @@
 
-# Rapport
+Programmering av mobila applikationer - Rapport "Preferences"
 
-**Skriv din rapport här!**
+Jag startade med att lägga till en Activity som döptes till SecondActivity. Till denna activity skapades en ny layout (activity_second).
+Vi har alltså två activitys, MainActivity och SecondActivity med tillhörande layouter, activity_main och activity_second.
+I activity_main lades en TextView och en Button till. Knappen ska ta oss till SecondActivity och TextViewn ska visa den data som kommer att 
+sparas från SecondActivity. 
+I activity_second skapades en EditText och en Button. Knappen ska ta oss tillbaka till MainActivity och i EditText kommer den data som ska 
+lagras och sedan hämtas i MainActivity att skrivas in.
 
-_Du kan ta bort all text som finns sedan tidigare_.
+När detta var gjort gjorde jag det möjligt att röra sig mellan activitys genom att koppla båda knapparna till en Intent. OBS findViewById
+har jag gått igenom mer detaljerat i tidigare inlämningar och jag bäljer därför att i denna rapport enbart fokusera på Shared Preferences.
 
-## Följande grundsyn gäller dugga-svar:
-
-- Ett kortfattat svar är att föredra. Svar som är längre än en sida text (skärmdumpar och programkod exkluderat) är onödigt långt.
-- Svaret skall ha minst en snutt programkod.
-- Svaret skall inkludera en kort övergripande förklarande text som redogör för vad respektive snutt programkod gör eller som svarar på annan teorifråga.
-- Svaret skall ha minst en skärmdump. Skärmdumpar skall illustrera exekvering av relevant programkod. Eventuell text i skärmdumpar måste vara läsbar.
-- I de fall detta efterfrågas, dela upp delar av ditt svar i för- och nackdelar. Dina för- respektive nackdelar skall vara i form av punktlistor med kortare stycken (3-4 meningar).
-
-Programkod ska se ut som exemplet nedan. Koden måste vara korrekt indenterad då den blir lättare att läsa vilket gör det lättare att hitta syntaktiska fel.
+Nästa steg var att sätta upp variabler för Shared Preferences i både MainActivity samt i SecondActivity. 
 
 ```
-function errorCallback(error) {
-    switch(error.code) {
-        case error.PERMISSION_DENIED:
-            // Geolocation API stöds inte, gör något
-            break;
-        case error.POSITION_UNAVAILABLE:
-            // Misslyckat positionsanrop, gör något
-            break;
-        case error.UNKNOWN_ERROR:
-            // Okänt fel, gör något
-            break;
-    }
+...
+import android.content.SharedPreferences;
+...
+
+public class MainActivity extends AppCompatActivity {
+
+    private SharedPreferences myPreferenceRef;
+    private SharedPreferences.Editor myPreferenceEditor;
+...
+
+```
+Ovanstående kod visar variabler för Shared Preefernces i MainActivity.
+
+```
+...
+import android.content.SharedPreferences;
+...
+
+public class SecondActivity extends AppCompatActivity {
+
+    private SharedPreferences myPreferenceRef;
+    private SharedPreferences.Editor myPreferenceEditor;
+...
+
+```
+Ovanstående kod visar variabler för Shared Preefernces i SecondActivity.
+
+
+Därefter skapar vi en instans för ett SharedPreference och en SharedPreferences.Editor objekt. 
+Genom findViewById kopplar jag samman min TextView (my_textview) med variabeln "prefTextRef".
+På sista raden avnänds "setText" för att ta den data som finns lagrad i "myPreferenceRef" och lagra den i "prefTextRef"
+som i sin tur sedan kommer att visas i min TextView (som beskrivet på raden ovan).
+
+
+```
+@Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        ...
+
+        myPreferenceRef = getSharedPreferences("key", MODE_PRIVATE);
+        myPreferenceEditor = myPreferenceRef.edit();
+
+        TextView prefTextRef= findViewById(R.id.my_textview);
+        prefTextRef.setText(myPreferenceRef.getString("key", "No preference found."));
+        
+        ...
+
+```
+
+I SecondActivity gäller i samma princip som ovan nämnt. Den stora skillnaden här är egentligen "store()" metoden.
+Denna metod sparar datan som skrivs in i EditText fältet (my_edittext) (visas längre ned). Metoden kallas när
+använaren trycker på knappen "Submit". 
+
+```
+
+ @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_second);
+
+        myPreferenceRef = getSharedPreferences("key", MODE_PRIVATE);
+        myPreferenceEditor = myPreferenceRef.edit();
+
+        EditText prefTextRef = findViewById(R.id.my_edittext);
+        prefTextRef.setText(myPreferenceRef.getString("key", "No preference found."));
+
+        Button Submit = findViewById(R.id.my_button2);
+        Submit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                store();
+                Intent intent = new Intent(SecondActivity.this, MainActivity.class);
+                startActivity(intent);
+            }
+         ...
+
+```
+
+Här kopplar jag samman metoden "store()" och mitt EditText fälet (my_edittext). Datan som skrivs in i fältet
+kommer att sparas och lagras i variablen "sharedPrefData".
+
+```
+
+void store() {
+    EditText sharedPrefData = findViewById(R.id.my_edittext);
+    myPreferenceEditor.putString("key", sharedPrefData.getText().toString());
+    myPreferenceEditor.apply();
 }
+
 ```
 
-Bilder läggs i samma mapp som markdown-filen.
+När vi återvänder från SecondActivity kommer datan som matats in i vår EditText (my_edittext) att vara sparad i 
+variabeln "sharedPrefData". Genom findViewById kopplar jag samman min TextView (my_textview) med variabeln "sharedPrefData".
+Sedan används "setText" för att hämta den data som finns lagrad i en Shared Precerence och sedan visas i vår TextView.
 
-![](android.png)
+```
 
-Läs gärna:
+@Override
+    protected void onResume() {
+        super.onResume();
+        TextView sharedPrefData = findViewById(R.id.my_textview);
+        sharedPrefData.setText(myPreferenceRef.getString("key", "Name"));
+    }
+...
 
-- Boulos, M.N.K., Warren, J., Gong, J. & Yue, P. (2010) Web GIS in practice VIII: HTML5 and the canvas element for interactive online mapping. International journal of health geographics 9, 14. Shin, Y. &
-- Wunsche, B.C. (2013) A smartphone-based golf simulation exercise game for supporting arthritis patients. 2013 28th International Conference of Image and Vision Computing New Zealand (IVCNZ), IEEE, pp. 459–464.
-- Wohlin, C., Runeson, P., Höst, M., Ohlsson, M.C., Regnell, B., Wesslén, A. (2012) Experimentation in Software Engineering, Berlin, Heidelberg: Springer Berlin Heidelberg.
+```
+
+![img.png](img.png)
+SecondActivity
+
+![img_1.png](img_1.png)
+MainActivity
