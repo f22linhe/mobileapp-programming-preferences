@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Shared Preferences</string>
+    <string name="button1">To Second Activity</string>
+    <string name="textview">TextView</string>
+    <string name="edittext">Insert Text</string>
+    <string name="button2">Submit</string>
 </resources>
